@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smol Agent Chat</title>
+    <style>
+        body { font-family: sans-serif; }
+        #chat-log { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
+        .user-message { text-align: right; color: blue; margin-bottom: 5px; }
+        .assistant-message { text-align: left; color: green; margin-bottom: 5px; }
+        #input-area { display: flex; }
+        #message-input { flex-grow: 1; }
+    </style>
+</head>
+<body>
+    <h1>Smol Agent Chat</h1>
+    <div id="chat-log"></div>
+    <div id="input-area">
+        <input type="text" id="message-input" placeholder="Type your message..." />
+        <button id="send-button">Send</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatLog = document.getElementById('chat-log');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+
+            sendButton.addEventListener('click', sendMessage);
+
+            messageInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const message = messageInput.value;
+                if (!message) return;
+
+                appendMessage('user-message', 'User:', message);
+                messageInput.value = '';
+
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ message: message })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let partialData = ''; // To handle chunked JSON
+
+                    function read() {
+                        reader.read().then(({ done, value }) => {
+                            if (done) {
+                                return;
+                            }
+                            partialData += decoder.decode(value);
+
+                            try {
+                                // Assuming response is an array of JSON objects
+                                const messages = JSON.parse(partialData);
+                                messages.forEach(msg => {
+                                    appendMessage('assistant-message', 'Assistant:', msg.content);
+                                });
+                                partialData = ''; // Reset after successful parse
+                            } catch (e) {
+                                // If not fully parsed, wait for next chunk
+                                if (!(e instanceof SyntaxError)) {
+                                    console.error("JSON parse error:", e);
+                                }
+                            }
+                            read(); // Continue reading stream
+                        }).catch(error => {
+                            console.error("Stream error:", error);
+                        });
+                    }
+                    read(); // Start reading the stream
+                })
+                .catch(error => {
+                    console.error("Fetch error:", error);
+                    appendMessage('error-message', 'Error:', 'Failed to get response from agent.');
+                });
+            }
+
+
+            function appendMessage(messageClass, sender, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add(messageClass);
+                messageDiv.innerHTML = `<strong>${sender}</strong> ${content}`; // Basic HTML for bold sender
+                chatLog.appendChild(messageDiv);
+                chatLog.scrollTop = chatLog.scrollHeight; // Scroll to bottom
+            }
+        });
+    </script>
+</body>
+</html>
