@@ -5,11 +5,8 @@ from smolagents import DuckDuckGoSearchTool
 
 web_routes_bp = Blueprint("web_routes", __name__, url_prefix="/web")
 
-# Instantiate the web agent *outside* the route function.
-# This means the agent is created only once when the blueprint is loaded, which is more efficient.
-# It reuses the same agent instance for all requests to this blueprint.
 try:
-    web_agent_instance = WebAgent(  # Renamed instance variable for clarity
+    web_agent_instance = WebAgent(  
         model_id="nvidia-Llama-3-1-Nemotron-70B-Instruct-HF",
         agent_type="codeagent",
         tools=[DuckDuckGoSearchTool()],
@@ -18,7 +15,6 @@ try:
     )
 except Exception as e:
     # Handle potential errors during agent initialization.
-    # You might want to log this error more robustly in a production setting.
     print(f"Error initializing web agent: {e}")
     web_agent_instance = None  # Set to None if initialization fails
 
