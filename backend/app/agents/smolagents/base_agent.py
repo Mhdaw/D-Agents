@@ -49,22 +49,3 @@ class Agent:
             )
         else:
             raise ValueError(f"Invalid agent type: {self.agent_type}. Must be 'codeagent' or 'toolcallingagent'")
-
-    def run_agent(self, task: str) -> Any:
-        """
-        Run the agent on a specific task.
-        
-        Args:
-            task (str): The task description for the agent to perform
-            
-        Returns:
-            Any: The result of the agent's execution
-            
-        Raises:
-            Exception: If the agent encounters an error during execution
-        """
-        try:
-            response = self.agent.run(task)
-            return response
-        except Exception as e:
-            raise Exception(f"Agent execution failed: {str(e)}")
