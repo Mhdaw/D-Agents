@@ -21,13 +21,9 @@ class WebAgent:
             verbosity_level=verbosity_level
         )
 
-    def run_web_agent(self, task: str) -> Any:
-        result = self.agent.run_agent(task) 
-        return result
-
     def test_web_agent(self):
         task = "Search for the best books about parallel computing"
-        result = self.run_web_agent(task)
+        result = self.run(task)
         print(f"Test Result: {result}") 
 
 
@@ -45,5 +41,5 @@ class WebAgent:
     #web_agent_instance.test_web_agent() # Call test_web_agent on the instance
     # Alternatively, you could run a task directly:
     # task = "What is the weather in London?"
-    # result = web_agent_instance.run_web_agent(task)
+    # result = web_agent_instance.run(task)
     # print(f"Task Result: {result}")
