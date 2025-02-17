@@ -33,7 +33,7 @@ def search_web():
         return jsonify({"error": "Missing 'query' parameter in the request."}), 400 # Return error if query is missing
 
     try:
-        result = web_agent_instance.run_web_agent(query) # Use the agent instance to run the search
+        result = web_agent_instance.run(query) # Use the agent instance to run the search
         return jsonify({"result": result})
     except Exception as e:
         print(f"Error during web agent execution: {e}")
